@@ -15,13 +15,20 @@ class AndroidLogProtocol(AbstractProtocol):
 												rabbit_queues=self.rabbit_queues)
 
 	def process_data(self, data):
-		try:
-			parse = json.loads(data.decode('utf-8'))
-			logging.info("Got data {}".format(parse))
+		self.buffer += data
 
-			if parse.get('type', None) == "log":
-				if self.validate(parse):
-					self.put_to_queue(data)
+		try:
+			while b'\n' in self.buffer:
+				index = self.buffer.index(b'\n')+1
+				decoded_data = self.buffer[:index].decode('utf-8')
+				self.buffer = self.buffer[index:]
+
+				logging.info("Got data {}".format(decoded_data))
+				parse = json.loads(decoded_data)
+
+				if parse.get('type', None) == "log":
+					if self.validate(parse):
+						self.put_to_queue(decoded_data)
 		except JSONDecodeError:
 			logging.warning("Got unparseable packet! Dropping!")
 
@@ -34,8 +41,8 @@ class AndroidLogProtocol(AbstractProtocol):
 		:return: 
 		"""
 		try:
-			if not isinstance(data['id'], int) or len(str(data['id'])) > 10:
-				logging.warning("Device ID is not an integer or is too long!")
+			if not isinstance(data['id'], str) or len(data['id']) > 10:
+				logging.warning("Device ID is not a string or is too long!")
 				return False
 			if not (isinstance(data['time'], int) or isinstance(data['time'], float)):
 				logging.warning("Time is not numeric!")

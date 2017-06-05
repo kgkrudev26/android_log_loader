@@ -1,9 +1,9 @@
 DB_CONFIG = {
     'logdb': {
-        'host': '',
-        'user': '',
-        'passwd': '',
-        'port': -1
+        'host': '178.21.13.216',
+        'user': 'log_android',
+        'passwd': 'tk20tk20',
+        'port': 3306
     },
 }
 

@@ -4,7 +4,7 @@ from queue import Empty
 
 from lib.common import Node
 from lib.message_queue import ReaderRabbitManager
-# from lib.database import Database
+from lib.database import Database
 
 
 class AbstractLoader(Node):
@@ -39,34 +39,22 @@ class AbstractLoader(Node):
 														auto_ack=False,)
 		super(AbstractLoader, self).run()
 
-	# def flush(self):
-	# 	"""
-	# 	Сливает буффер в базу
-	# 	:return:
-	# 	"""
-	#
-	# 	with Database(self.db_name, persistent=True) as db:
-	# 		cursor = db.cursor()
-	# 		while self.buffer:
-	# 			data_to_flush = self.buffer[:self.MAX_DATABLOCKS_PER_QUERY]
-	# 			self.buffer = self.buffer[self.MAX_DATABLOCKS_PER_QUERY:]
-	# 			# logging.info("rows flushed: {}".format(len(data_to_flush)))#debug
-	# 			# logging.info("query: {}".format(self.query))#debug
-	# 			rows_inserted = cursor.executemany(self.query, data_to_flush)
-	# 			# logging.info("rows_inserted {}".format(rows_inserted))#debug
-	# 			self.working_tick(self.ack(True))  # отправляем подтверждение успешной обработки пакета
-
 	def flush(self):
 		"""
-		Тестовое, пока базу не наладили.
-		:return: 
+		Сливает буффер в базу
+		:return:
 		"""
 
-		while self.buffer:
-			data_to_flush = self.buffer[:self.MAX_DATABLOCKS_PER_QUERY]
-			self.buffer = self.buffer[self.MAX_DATABLOCKS_PER_QUERY:]
-			logging.info("flushing with {} \n {}".format(self.query, data_to_flush))
-			self.working_tick(self.ack(True))  # отправляем подтверждение успешной обработки пакета
+		with Database(self.db_name, persistent=True) as db:
+			cursor = db.cursor()
+			while self.buffer:
+				data_to_flush = self.buffer[:self.MAX_DATABLOCKS_PER_QUERY]
+				self.buffer = self.buffer[self.MAX_DATABLOCKS_PER_QUERY:]
+				# logging.info("rows flushed: {}".format(len(data_to_flush)))#debug
+				# logging.info("query: {}".format(self.query))#debug
+				rows_inserted = cursor.executemany(self.query, data_to_flush)
+				# logging.info("rows_inserted {}".format(rows_inserted))#debug
+				self.working_tick(self.ack(True))  # отправляем подтверждение успешной обработки пакета
 
 	def check_flush(self):
 		"""

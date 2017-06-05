@@ -1,3 +1,4 @@
+import logging
 import json
 
 from loaders.abstract_loader import AbstractLogLoader
@@ -11,14 +12,15 @@ class AndroidLogLoader(AbstractLogLoader):
 		super(AndroidLogLoader, self).__init__(protocol_name=self.protocol_name)
 
 		self.db_name = 'logdb'
-		self.table = 'logs'
-		self.fields = ('id', 'time', 'text',)
+		self.table = 'android.logs_android'
+		self.fields = ('device_id', 'packet_time', 'log_text',)
 
 		self.query = "INSERT IGNORE INTO {table}({fields}) VALUES ({formatting})".format(
 			table=self.table, fields=",".join(self.fields), formatting=",".join('%s' for _ in range(len(self.fields)))
 		)
 
 	def handle(self, value):
+		logging.info("handling {}".format(value))
 		parse = json.loads(value.decode('utf-8'))
 
 		device_id = int(parse.get("id", 1))
