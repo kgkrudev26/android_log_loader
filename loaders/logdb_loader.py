@@ -20,7 +20,6 @@ class AndroidLogLoader(AbstractLogLoader):
 		)
 
 	def handle(self, value):
-		logging.info("handling {}".format(value))
 		parse = json.loads(value.decode('utf-8'))
 
 		device_id = int(parse.get("id", 1))

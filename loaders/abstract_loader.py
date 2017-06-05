@@ -47,11 +47,19 @@ class AbstractLoader(Node):
 
 		with Database(self.db_name, persistent=True) as db:
 			cursor = db.cursor()
+
+			# выставляем кодировку, иначе будет глючить на latin-1
+			db._conn.set_character_set('utf8')
+			cursor.execute('SET NAMES utf8;')
+			cursor.execute('SET CHARACTER SET utf8;')
+			cursor.execute('SET character_set_connection=utf8;')
+
 			while self.buffer:
 				data_to_flush = self.buffer[:self.MAX_DATABLOCKS_PER_QUERY]
 				self.buffer = self.buffer[self.MAX_DATABLOCKS_PER_QUERY:]
 				# logging.info("rows flushed: {}".format(len(data_to_flush)))#debug
 				# logging.info("query: {}".format(self.query))#debug
+				logging.info("data_to_flush {}".format(data_to_flush))#debug
 				rows_inserted = cursor.executemany(self.query, data_to_flush)
 				# logging.info("rows_inserted {}".format(rows_inserted))#debug
 				self.working_tick(self.ack(True))  # отправляем подтверждение успешной обработки пакета
