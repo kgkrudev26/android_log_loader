@@ -71,4 +71,4 @@ class ProcessAliver(Thread):
 			self.component_processes[proc_index] = p  # сохраняем handle на процесс
 			p.start()
 			p.join()
-			sleep(5)
+			sleep(1)
