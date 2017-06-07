@@ -14,7 +14,7 @@ class ProcessAliver(Thread):
 	"""
 
 	# максимальное время, которое процесс может не откликаться. Выше этого - он будет убит.
-	MAX_FROZEN_TIME = 300
+	MAX_FROZEN_TIME = 30
 
 	def __init__(self, components):
 		"""
@@ -71,4 +71,4 @@ class ProcessAliver(Thread):
 			self.component_processes[proc_index] = p  # сохраняем handle на процесс
 			p.start()
 			p.join()
-			sleep(1)
+			sleep(5)
