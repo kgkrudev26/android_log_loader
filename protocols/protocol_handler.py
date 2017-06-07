@@ -2,6 +2,7 @@ from lib.common import Node
 import logging
 import asyncio
 
+from lib.message_queue import ExchangePublisherRabbitManager
 
 class ProtocolHandler(Node):
 	"""
@@ -17,6 +18,10 @@ class ProtocolHandler(Node):
 		super(ProtocolHandler, self).__init__()
 		# передаём protocol_handler, чтобы протоколы могли передавать тики о работе
 		self.protocol.protocol_manager = self
+		self.protocol.rabbit_manager = ExchangePublisherRabbitManager(exchange="android_log_exchange", queues=("android_loader_log",),
+                                                             persistent="protocol",
+                                                             # channel_confirm_delivery=True,
+                                                             )
 
 	def run(self):
 		# запускаем цикл событий

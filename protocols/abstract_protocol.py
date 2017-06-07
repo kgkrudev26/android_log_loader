@@ -23,10 +23,10 @@ class AbstractProtocol(asyncio.Protocol):
         self.is_auth = True
         self.transport = None
 
-        self.rabbit_manager = ExchangePublisherRabbitManager(exchange=rabbit_exchange, queues=rabbit_queues,
-                                                             persistent="protocol",
-                                                             # channel_confirm_delivery=True,
-                                                             )
+        # self.rabbit_manager = ExchangePublisherRabbitManager(exchange=rabbit_exchange, queues=rabbit_queues,
+        #                                                      persistent="protocol",
+        #                                                      # channel_confirm_delivery=True,
+        #                                                      )
 
     def freeze_tick(self):
         """
@@ -80,4 +80,3 @@ class AbstractProtocol(asyncio.Protocol):
         :return:
         """
         logging.info("Соединение с клиентом {} потеряно!".format(self.client_id))
-        self.rabbit_manager.close_channel()
