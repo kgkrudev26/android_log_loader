@@ -23,7 +23,7 @@ class AndroidLogProtocol(AbstractProtocol):
 				decoded_data = self.buffer[:index].decode('utf-8')
 				self.buffer = self.buffer[index:]
 
-				logging.info("Got data {}".format(decoded_data))
+				# logging.info("Got data {}".format(decoded_data))
 				parse = json.loads(decoded_data)
 
 				if parse.get('type', None) == "log":

@@ -65,6 +65,9 @@ class AbstractRabbitManager(Thread):
         self._channel = self.channel()
         self.enable_confirm_delivery()
 
+    def close_channel(self):
+        self._channel.close()
+
     def enable_confirm_delivery(self):
         """
         Включает на канале режим, удостоверяющийся, что пакеты доходят.
