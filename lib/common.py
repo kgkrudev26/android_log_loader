@@ -93,7 +93,7 @@ class Node(Process):
         """
         pass
 
-    def ack(self, status, multiple=True):
+    def ack(self, status, multiple=True, tag=None):
         """
         Подтверждение в RabbitMQ. Заставляет его сбросить обработанные данные.
         :param multiple: 
@@ -101,7 +101,8 @@ class Node(Process):
         :return: 
         """
         if status:
-            self.read_rabbit_manager.ack(tag=self.get_current_tag(), multiple=multiple)
+            _tag = tag if tag else self.get_current_tag()
+            self.read_rabbit_manager.ack(tag=_tag, multiple=multiple)
             return True
 
     def working_tick(self, status):

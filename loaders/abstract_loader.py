@@ -24,6 +24,7 @@ class AbstractLoader(Node):
 		self.BUFFER_FLUSH_TIMEOUT = 1  # сливаем буффер в базу через это время
 		self.last_flush_time = time()
 		self.buffer = []  # сюда пишутся обработанные данные для последующего группового слива в базу
+		self.tag_buffer = []
 		self.db_name = ''  # имя базы, как прописано в config.py
 		self.table = ''  # имя таблицы для записи пакета
 		self.fields = ()  # поля таблицы,
@@ -56,13 +57,17 @@ class AbstractLoader(Node):
 
 			while self.buffer:
 				data_to_flush = self.buffer[:self.MAX_DATABLOCKS_PER_QUERY]
+				tags_to_flush = self.tag_buffer[:self.MAX_DATABLOCKS_PER_QUERY]
 				self.buffer = self.buffer[self.MAX_DATABLOCKS_PER_QUERY:]
+				self.tag_buffer = self.tag_buffer[self.MAX_DATABLOCKS_PER_QUERY:]
 				# logging.info("rows flushed: {}".format(len(data_to_flush)))#debug
 				# logging.info("query: {}".format(self.query))#debug
-				logging.info("data_to_flush {}".format(data_to_flush))#debug
+				# logging.info("data_to_flush {}".format(data_to_flush))#debug
 				rows_inserted = cursor.executemany(self.query, data_to_flush)
-				# logging.info("rows_inserted {}".format(rows_inserted))#debug
-				self.working_tick(self.ack(True))  # отправляем подтверждение успешной обработки пакета
+				logging.info("rows_inserted {}".format(rows_inserted))#debug
+				for t in tags_to_flush:
+					self.ack(status=True, multiple=False, tag=t)
+				self.working_tick(True)  # отправляем подтверждение успешной обработки пакета
 
 	def check_flush(self):
 		"""
@@ -74,7 +79,6 @@ class AbstractLoader(Node):
 		if self.buffer and time_since_flush > self.BUFFER_FLUSH_TIMEOUT:
 			# logging.info("flushing! Buffer: {}".format(self.buffer))#debug
 			self.flush()
-			self.buffer.clear()#debug!!!
 			self.last_flush_time = time()
 
 	def get(self, block=False):
@@ -90,9 +94,14 @@ class AbstractLoader(Node):
 		return data
 
 	def put(self, data):
-		self.buffer.append(data)
-		# пока не отправляем подтверждение. Слив в базу происходит во flush
-		return False
+		if data:
+			self.buffer.append(data)
+			self.tag_buffer.append(self.get_current_tag())
+		else:
+			return True
+
+
+		return False  # пока не отправляем подтверждение. Слив в базу происходит во flush
 
 
 class AbstractLogLoader(AbstractLoader):

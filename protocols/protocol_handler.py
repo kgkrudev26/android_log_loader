@@ -19,9 +19,9 @@ class ProtocolHandler(Node):
 		# передаём protocol_handler, чтобы протоколы могли передавать тики о работе
 		self.protocol.protocol_manager = self
 		self.protocol.rabbit_manager = ExchangePublisherRabbitManager(exchange="android_log_exchange", queues=("android_loader_log",),
-                                                             persistent="protocol",
-                                                             # channel_confirm_delivery=True,
-                                                             )
+															 persistent="protocol",
+															 # channel_confirm_delivery=True,
+															 )
 
 	def run(self):
 		# запускаем цикл событий

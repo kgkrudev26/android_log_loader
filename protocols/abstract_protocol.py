@@ -23,6 +23,9 @@ class AbstractProtocol(asyncio.Protocol):
         self.is_auth = True
         self.transport = None
 
+        # менеджер очередей задан через Protocol handler.
+        # Надо сделать более вмемяемую схему, на самом деле, чтобы меньше взаимосвязей.
+
         # self.rabbit_manager = ExchangePublisherRabbitManager(exchange=rabbit_exchange, queues=rabbit_queues,
         #                                                      persistent="protocol",
         #                                                      # channel_confirm_delivery=True,

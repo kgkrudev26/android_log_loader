@@ -22,8 +22,12 @@ class AndroidLogLoader(AbstractLogLoader):
 	def handle(self, value):
 		parse = json.loads(value.decode('utf-8'))
 
-		device_id = int(parse.get("id", 1))
-		receive_time = int(parse.get("time", 0))
+		try:
+			device_id = int(parse.get("id", 1))
+			receive_time = int(parse.get("time", 0))
+		except ValueError:
+			return None
+
 		text = parse.get("text", "")
 
 		return device_id, receive_time, text
