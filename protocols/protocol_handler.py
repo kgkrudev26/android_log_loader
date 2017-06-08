@@ -18,13 +18,14 @@ class ProtocolHandler(Node):
 		super(ProtocolHandler, self).__init__()
 		# передаём protocol_handler, чтобы протоколы могли передавать тики о работе
 		self.protocol.protocol_manager = self
-		self.protocol.rabbit_manager = ExchangePublisherRabbitManager(exchange="android_log_exchange", queues=("android_loader_log",),
-															 persistent="protocol",
-															 # channel_confirm_delivery=True,
-															 )
 
 	def run(self):
 		# запускаем цикл событий
+
+		self.protocol.rabbit_manager = ExchangePublisherRabbitManager(exchange="android_log_exchange", queues=("android_loader_log",),
+															 persistent="protocol",
+															 channel_confirm_delivery=False,
+															 )
 
 		# автоматически loop создаётся только в главном процессе. В остальных его надо создать явно.
 		loop = asyncio.new_event_loop()
