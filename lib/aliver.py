@@ -2,7 +2,7 @@ import logging
 from time import sleep, time
 from threading import Thread
 from multiprocessing import Queue as mqueue
-
+import subprocess
 
 class ProcessAliver(Thread):
 	"""
@@ -15,6 +15,8 @@ class ProcessAliver(Thread):
 
 	# максимальное время, которое процесс может не откликаться. Выше этого - он будет убит.
 	MAX_FROZEN_TIME = 30
+
+	port = 8000  # порт, куда подсоединяются устройства
 
 	def __init__(self, components):
 		"""
@@ -55,6 +57,21 @@ class ProcessAliver(Thread):
 				if self.component_processes[n] and (time() - self.freezekill_start_times[n]) > self.MAX_FROZEN_TIME:
 					logging.warning("Process {} appears to be frozen! Killing!".format(self.component_processes[n]))
 					self.component_processes[n].terminate()
+
+				# Соединения с устройствами на уровне сервера почему-то не закрываются.
+				# В результате они накапливаются, программа упирается в лимит и выдаёт ошибку
+				# OSError: [Errno 24] Too many open files
+				# Значит будем отслеживать число соединений на этом порту и убивать приёмщик, когда их накопится много.
+				MAX_OPEN_CONNS = 500
+				if component.__name__ == "ProtocolHandler":
+					ps = subprocess.Popen(['lsof', '-i', 'TCP:{}'.format(self.port)], stdout=subprocess.PIPE)
+					out = ps.communicate()[0]
+					open_conns = len(out.decode().split('\n'))
+					logging.info("Open connections: {}".format(open_conns))
+					if open_conns > MAX_OPEN_CONNS:
+						logging.warning("Receiver has opened more than {} connections. Restarting!".format(MAX_OPEN_CONNS))
+						self.component_processes[n].terminate()
+
 
 			sleep(5)
 

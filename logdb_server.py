@@ -24,6 +24,8 @@ args = parser.parse_args()
 host = args.host
 port = args.port
 
+ProcessAliver.port = port
+
 # настройки лога
 numeric_level = getattr(logging, args.loglevel)
 logging.basicConfig(format=u'[%(asctime)s] %(pathname)s:%(filename)s[LINE:%(lineno)d]# %(levelname)-8s  %(message)s',
@@ -32,9 +34,10 @@ logging.basicConfig(format=u'[%(asctime)s] %(pathname)s:%(filename)s[LINE:%(line
 AbstractRabbitManager.DEBUG = args.test_queue
 
 # настраиваем протоколы
-from protocols.protocol_handler import ProtocolHandler
 from protocols.android_log_protocol import AndroidLogProtocol
 protocol = AndroidLogProtocol
+
+from protocols.protocol_handler import ProtocolHandler
 protocol_handler = ProtocolHandler
 protocol_handler.protocol = protocol
 protocol_handler.host = host
@@ -43,8 +46,9 @@ protocol_handler.port = port
 from loaders.logdb_loader import AndroidLogLoader
 log_packet_loader = AndroidLogLoader
 
-from cleaners.log_base_cleaner import LogDatabaseCleaner
-db_cleaner = LogDatabaseCleaner
+# from cleaners.log_base_cleaner import LogDatabaseCleaner
+# db_cleaner = LogDatabaseCleaner
+db_cleaner = None
 
 # собираем классы доступных компонентов системы в кортеж
 component_classes = tuple(filter(None, (protocol_handler, log_packet_loader, db_cleaner)))
