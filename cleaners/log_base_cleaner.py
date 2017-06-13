@@ -1,3 +1,5 @@
+#DEPRECATED
+
 import logging
 from time import time, sleep
 from lib.common import Node

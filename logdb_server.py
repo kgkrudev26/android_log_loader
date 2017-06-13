@@ -46,12 +46,8 @@ protocol_handler.port = port
 from loaders.logdb_loader import AndroidLogLoader
 log_packet_loader = AndroidLogLoader
 
-# from cleaners.log_base_cleaner import LogDatabaseCleaner
-# db_cleaner = LogDatabaseCleaner
-db_cleaner = None
-
 # собираем классы доступных компонентов системы в кортеж
-component_classes = tuple(filter(None, (protocol_handler, log_packet_loader, db_cleaner)))
+component_classes = tuple(filter(None, (protocol_handler, log_packet_loader,)))
 print("component_classes", component_classes)#debug
 aliver = ProcessAliver(component_classes)
 aliver.join()
