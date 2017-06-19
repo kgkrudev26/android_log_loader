@@ -13,7 +13,7 @@ class AndroidLogLoader(AbstractLogLoader):
 
 		self.db_name = 'logdb'
 		self.table = 'android.logs_android'
-		self.fields = ('device_id', 'packet_time', 'log_text',)
+		self.fields = ('device_id', 'server_time', 'packet_time', 'log_text',)
 
 		self.query = "INSERT IGNORE INTO {table}({fields}) VALUES ({formatting})".format(
 			table=self.table, fields=",".join(self.fields), formatting=",".join('%s' for _ in range(len(self.fields)))
@@ -24,10 +24,11 @@ class AndroidLogLoader(AbstractLogLoader):
 
 		try:
 			device_id = int(parse.get("id", 1))
-			receive_time = int(parse.get("time", 0))
+			packet_time = int(parse.get("time", 0))
+			server_time = int(parse.get("server_time", 0))
 		except ValueError:
 			return None
 
 		text = parse.get("text", "")
 
-		return device_id, receive_time, text
+		return device_id, server_time, packet_time, text

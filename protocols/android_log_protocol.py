@@ -1,4 +1,5 @@
 import logging
+from time import time
 import json
 from json.decoder import JSONDecodeError
 
@@ -9,6 +10,7 @@ class AndroidLogProtocol(AbstractProtocol):
 
 	rabbit_exchange = "android_log_exchange"
 	rabbit_queues = ("android_loader_log",)
+	rabbit_manager = None
 
 	def __init__(self):
 		super(AndroidLogProtocol, self).__init__(rabbit_exchange=self.rabbit_exchange,
@@ -17,20 +19,23 @@ class AndroidLogProtocol(AbstractProtocol):
 	def process_data(self, data):
 		self.buffer += data
 
-		try:
-			while b'\n' in self.buffer:
-				index = self.buffer.index(b'\n')+1
-				decoded_data = self.buffer[:index].decode('utf-8')
-				self.buffer = self.buffer[index:]
+		while b'\n' in self.buffer:
+			index = self.buffer.index(b'\n')+1
+			decoded_data = self.buffer[:index].decode('utf-8')
+			self.buffer = self.buffer[index:]
 
-				# logging.info("Got data {}".format(decoded_data))
+			# logging.info("Got data {}".format(decoded_data))#debug
+
+			try:
 				parse = json.loads(decoded_data)
 
 				if parse.get('type', None) == "log":
 					if self.validate(parse):
-						self.put_to_queue(decoded_data)
-		except JSONDecodeError:
-			logging.warning("Got unparseable packet! Dropping!")
+						parse['server_time'] = int(time())
+						data_to_send = json.dumps(parse)
+						self.put_to_queue(data_to_send)
+			except JSONDecodeError:
+				logging.warning("Got unparseable packet! Dropping!".format(decoded_data))
 
 		return True
 
